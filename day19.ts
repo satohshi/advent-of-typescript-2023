@@ -1,22 +1,14 @@
 type Gifts = ['🛹', '🚲', '🛴', '🏄']
-
-type PlusOne<
-    T extends number,
-    Acc extends Array<unknown> = []
-> = Acc['length'] extends T
-    ? [...Acc, unknown]['length']
-    : PlusOne<T, [...Acc, unknown]>
+type GiftLooper<T extends number> = [1, 2, 3, 0][T]
 
 type MinusOne<
     T extends number,
     Acc extends unknown[] = []
 > = Acc['length'] extends T
-    ? Acc extends [...infer head, unknown]
-        ? head['length']
+    ? Acc extends [...infer Head, unknown]
+        ? Head['length']
         : never
     : MinusOne<T, [...Acc, unknown]>
-
-type GiftLooper<T extends number> = T extends 3 ? 0 : PlusOne<T>
 
 type Rebuild<
     T extends Array<number>,

@@ -16,7 +16,7 @@ type MinusOne<
         : never
     : MinusOne<T, [...Acc, unknown]>
 
-type GiftLooper<T extends number> = T extends 4 ? 0 : T
+type GiftLooper<T extends number> = T extends 3 ? 0 : PlusOne<T>
 
 type Rebuild<
     T extends Array<number>,
@@ -24,6 +24,6 @@ type Rebuild<
     I extends number = 0
 > = T extends [infer Q extends number, ...infer Rest extends number[]]
     ? Q extends 1
-        ? Rebuild<Rest, [...Res, Gifts[I]], GiftLooper<PlusOne<I>>>
+        ? Rebuild<Rest, [...Res, Gifts[I]], GiftLooper<I>>
         : Rebuild<[MinusOne<Q>, ...Rest], [...Res, Gifts[I]], I>
     : Res

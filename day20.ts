@@ -2,7 +2,7 @@ type ToAsciiArt<
     T extends string,
     Acc extends Array<string> = [],
     Line extends Array<string> = ['', '', '']
-> = Uppercase<T> extends `${infer First extends string}${infer Rest}`
+> = Uppercase<T> extends `${infer First}${infer Rest}`
     ? First extends keyof Letters
         ? ToAsciiArt<
               Rest,

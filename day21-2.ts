@@ -17,11 +17,11 @@ type Win = ['❌', '❌', '❌'] | ['⭕', '⭕', '⭕']
 
 // Same as array.with()
 type ArrayWith<
-    Arr extends string[],
+    Arr extends Array<string>,
     I extends number,
     S extends string,
-    Acc extends string[] = []
-> = Arr extends [infer F extends string, ...infer Rest extends string[]]
+    Acc extends Array<string> = []
+> = Arr extends [infer F extends string, ...infer Rest extends Array<string>]
     ? Acc['length'] extends I
         ? ArrayWith<Rest, I, S, [...Acc, S]>
         : ArrayWith<Rest, I, S, [...Acc, F]>
@@ -29,12 +29,15 @@ type ArrayWith<
 
 // 2D version of ArrayWith. Returns never if the cell is already taken
 type MatrixWith<
-    Arr extends string[][],
+    Arr extends Array<string[]>,
     Y extends number,
     X extends number,
     S extends string,
-    Acc extends string[][] = []
-> = Arr extends [infer F extends string[], ...infer Rest extends string[][]]
+    Acc extends Array<string[]> = []
+> = Arr extends [
+    infer F extends Array<string>,
+    ...infer Rest extends Array<string[]>
+]
     ? Acc['length'] extends Y
         ? F[X] extends TicTacToeEmptyCell
             ? MatrixWith<Rest, Y, X, S, [...Acc, ArrayWith<F, X, S>]>

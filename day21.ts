@@ -10,15 +10,11 @@ type TicTacToeXObj = { left: 0; center: 1; right: 2 }
 type TicTacToeXPositions = keyof TicTacToeXObj
 type TicTacToePositions = `${TicTacToeYPositions}-${TicTacToeXPositions}`
 type TicTactToeBoard = TicTacToeCell[][]
-type TicTacToeGame = {
-    board: TicTactToeBoard
-    state: TicTacToeState
-}
+type TicTacToeGame = { board: TicTactToeBoard; state: TicTacToeState }
 type EmptyBoard = [['  ', '  ', '  '], ['  ', '  ', '  '], ['  ', '  ', '  ']]
-type NewGame = {
-    board: EmptyBoard
-    state: '❌'
-}
+type NewGame = { board: EmptyBoard; state: '❌' }
+
+type Win = ['❌', '❌', '❌'] | ['⭕', '⭕', '⭕']
 type WinningCombination =
     | [0, 1, 2]
     | [3, 4, 5]
@@ -68,14 +64,8 @@ type CheckWin<Board extends TicTactToeBoard> = keyof {
         To1D<Board>[C[0]],
         To1D<Board>[C[1]],
         To1D<Board>[C[2]]
-    ] extends ['❌', '❌', '❌']
-        ? '❌ Won'
-        : [To1D<Board>[C[0]], To1D<Board>[C[1]], To1D<Board>[C[2]]] extends [
-              '⭕',
-              '⭕',
-              '⭕'
-          ]
-        ? '⭕ Won'
+    ] extends Win
+        ? `${To1D<Board>[C[0]]} Won`
         : TicTacToeEmptyCell extends Board[number][number]
         ? never
         : 'Draw']: unknown

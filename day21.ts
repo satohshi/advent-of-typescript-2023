@@ -25,7 +25,10 @@ type WinningCombination =
     | [0, 4, 8]
     | [2, 4, 6]
 
+// Convert board to 1D array
 type To1D<T extends TicTactToeBoard> = [...T[0], ...T[1], ...T[2]]
+
+// Convert 1D array back to board
 type To2D<T extends string[], Acc extends string[][] = []> = T extends [
     infer A extends string,
     infer B extends string,
@@ -35,11 +38,13 @@ type To2D<T extends string[], Acc extends string[][] = []> = T extends [
     ? To2D<Rest, [...Acc, [A, B, C]]>
     : Acc
 
+// Convert TicTacToePositions to indices
 type PositionToIndex<T extends string> =
     T extends `${infer Y extends TicTacToeYPositions}-${infer X extends TicTacToeXPositions}`
         ? TicTacToeYObj[Y][TicTacToeXObj[X]]
         : never
 
+// Similar to array.with(), but returns never if the cell is already taken
 type With<
     Arr extends string[],
     I extends number,
@@ -49,7 +54,7 @@ type With<
     ? Acc['length'] extends I
         ? F extends TicTacToeEmptyCell
             ? With<Rest, I, S, [...Acc, S]>
-            : With<Rest, I, S, [...Acc, F]>
+            : never
         : With<Rest, I, S, [...Acc, F]>
     : Acc
 
@@ -59,7 +64,8 @@ type Move<
     Chip extends TicTacToeChip
 > = To2D<With<To1D<Board>, PositionToIndex<Pos>, Chip>>
 
-type CheckWin<Board extends TicTactToeBoard> = keyof {
+// Check if the game has ended. Return never if it hasn't
+type EndState<Board extends TicTactToeBoard> = keyof {
     [C in WinningCombination as [
         To1D<Board>[C[0]],
         To1D<Board>[C[1]],
@@ -71,11 +77,11 @@ type CheckWin<Board extends TicTactToeBoard> = keyof {
         : 'Draw']: unknown
 }
 
-type GetState<
-    T extends TicTactToeBoard,
-    U extends TicTactToeBoard,
-    C extends TicTacToeChip
-> = T extends U ? C : CheckWin<U> extends never ? Swap<C> : CheckWin<U>
+// Return result of the move as TicTacToeGame
+type Next<T extends TicTactToeBoard, C extends TicTacToeChip> = {
+    board: T
+    state: EndState<T> extends never ? Swap<C> : EndState<T>
+}
 
 type TicTacToe<
     T extends TicTacToeGame,
@@ -84,8 +90,7 @@ type TicTacToe<
     board: infer Board extends TicTactToeBoard
     state: infer Chip extends TicTacToeChip
 }
-    ? {
-          board: Move<Board, Pos, Chip>
-          state: GetState<Board, Move<Board, Pos, Chip>, Chip>
-      }
+    ? Move<Board, Pos, Chip> extends never
+        ? T
+        : Next<Move<Board, Pos, Chip>, Chip>
     : never

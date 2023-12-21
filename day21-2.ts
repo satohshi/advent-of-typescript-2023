@@ -15,6 +15,7 @@ type EmptyBoard = [['  ', '  ', '  '], ['  ', '  ', '  '], ['  ', '  ', '  ']]
 type NewGame = { board: EmptyBoard; state: '❌' }
 type Win = ['❌', '❌', '❌'] | ['⭕', '⭕', '⭕']
 
+// Similar to array.with(), but returns never if the cell is already taken
 type ArrayWith<
     Arr extends string[],
     I extends number,
@@ -28,6 +29,7 @@ type ArrayWith<
         : ArrayWith<Rest, I, S, [...Acc, F]>
     : Acc
 
+// 2D version of ArrayWith
 type MatrixWith<
     Arr extends string[][],
     Y extends number,
@@ -51,22 +53,26 @@ type Move<
     : never
 
 type EndState<Board extends TicTactToeBoard> =
+    // Check for vertical lines
     | keyof {
           [Y in 0 | 1 | 2 as Board[Y] extends Win
               ? `${Board[Y][0]} Won`
               : never]: unknown
       }
+    // Check for horizontal lines
     | keyof {
           [X in 0 | 1 | 2 as [Board[0][X], Board[1][X], Board[2][X]] extends Win
               ? `${Board[0][X]} Won`
               : never]: unknown
       }
+    // Check for diagonal lines
     | ([Board[0][0], Board[1][1], Board[2][2]] extends Win
           ? `${Board[1][1]} Won`
           : never)
     | ([Board[0][2], Board[1][1], Board[2][0]] extends Win
           ? `${Board[1][1]} Won`
           : never)
+    // Check if the board is filled
     | (TicTacToeEmptyCell extends Board[number][number] ? never : 'Draw')
 
 type Next<T extends TicTactToeBoard, C extends TicTacToeChip> = {

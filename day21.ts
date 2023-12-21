@@ -1,9 +1,3 @@
-type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B
-    ? 1
-    : 2
-    ? true
-    : false
-
 type TicTacToeChip = '❌' | '⭕'
 type Swap<T extends TicTacToeChip> = T extends '❌' ? '⭕' : '❌'
 type TicTacToeEndState = '❌ Won' | '⭕ Won' | 'Draw'
@@ -25,7 +19,7 @@ type NewGame = {
     board: EmptyBoard
     state: '❌'
 }
-type WinningCombinations =
+type WinningCombination =
     | [0, 1, 2]
     | [3, 4, 5]
     | [6, 7, 8]
@@ -40,17 +34,18 @@ type PositionToIndex<T extends string> =
         ? TicTacToeYObj[Y][TicTacToeXObj[X]]
         : never
 
-type With<Arr extends string[], I extends keyof Arr, T extends string> = [
-    0 extends I ? (Arr[0] extends TicTacToeEmptyCell ? T : Arr[0]) : Arr[0],
-    1 extends I ? (Arr[1] extends TicTacToeEmptyCell ? T : Arr[1]) : Arr[1],
-    2 extends I ? (Arr[2] extends TicTacToeEmptyCell ? T : Arr[2]) : Arr[2],
-    3 extends I ? (Arr[3] extends TicTacToeEmptyCell ? T : Arr[3]) : Arr[3],
-    4 extends I ? (Arr[4] extends TicTacToeEmptyCell ? T : Arr[4]) : Arr[4],
-    5 extends I ? (Arr[5] extends TicTacToeEmptyCell ? T : Arr[5]) : Arr[5],
-    6 extends I ? (Arr[6] extends TicTacToeEmptyCell ? T : Arr[6]) : Arr[6],
-    7 extends I ? (Arr[7] extends TicTacToeEmptyCell ? T : Arr[7]) : Arr[7],
-    8 extends I ? (Arr[8] extends TicTacToeEmptyCell ? T : Arr[8]) : Arr[8]
-]
+type With<
+    Arr extends string[],
+    I extends number,
+    T extends string,
+    Acc extends string[] = []
+> = Arr extends [infer F extends string, ...infer Rest extends string[]]
+    ? Acc['length'] extends I
+        ? F extends TicTacToeEmptyCell
+            ? With<Rest, I, T, [...Acc, T]>
+            : With<Rest, I, T, [...Acc, F]>
+        : With<Rest, I, T, [...Acc, F]>
+    : Acc
 
 type To1DArr<Board extends TicTactToeBoard> = [
     ...Board[0],
@@ -74,7 +69,7 @@ type ProccessBoard<
 > = To2DArr<With<To1DArr<Board>, PositionToIndex<P>, S>>
 
 type CheckWin<Board extends TicTactToeBoard> = keyof {
-    [C in WinningCombinations as [
+    [C in WinningCombination as [
         To1DArr<Board>[C[0]],
         To1DArr<Board>[C[1]],
         To1DArr<Board>[C[2]]
@@ -97,7 +92,7 @@ type Turn<
     S extends TicTacToeChip
 > = {
     board: ProccessBoard<Board, P, S>
-    state: Equal<Board, ProccessBoard<Board, P, S>> extends true
+    state: Board extends ProccessBoard<Board, P, S>
         ? S
         : CheckWin<ProccessBoard<Board, P, S>> extends never
         ? Swap<S>

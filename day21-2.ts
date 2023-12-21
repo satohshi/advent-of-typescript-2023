@@ -54,13 +54,13 @@ type Move<
     : never
 
 type EndState<Board extends TicTactToeBoard> =
-    // Check for vertical lines
+    // Check for horizontal lines
     | keyof {
           [Y in 0 | 1 | 2 as Board[Y] extends Win
               ? `${Board[Y][0]} Won`
               : never]: unknown
       }
-    // Check for horizontal lines
+    // Check for vertical lines
     | keyof {
           [X in 0 | 1 | 2 as [Board[0][X], Board[1][X], Board[2][X]] extends Win
               ? `${Board[0][X]} Won`

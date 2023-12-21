@@ -29,6 +29,16 @@ type WinningCombination =
     | [0, 4, 8]
     | [2, 4, 6]
 
+type To1D<T extends TicTactToeBoard> = [...T[0], ...T[1], ...T[2]]
+type To2D<T extends Array<string>, Acc extends string[][] = []> = T extends [
+    infer A extends string,
+    infer B extends string,
+    infer C extends string,
+    ...infer Rest extends string[]
+]
+    ? To2D<Rest, [...Acc, [A, B, C]]>
+    : Acc
+
 type PositionToIndex<T extends string> =
     T extends `${infer Y extends TicTacToeYPositions}-${infer X extends TicTacToeXPositions}`
         ? TicTacToeYObj[Y][TicTacToeXObj[X]]
@@ -37,74 +47,53 @@ type PositionToIndex<T extends string> =
 type With<
     Arr extends string[],
     I extends number,
-    T extends string,
+    S extends string,
     Acc extends string[] = []
 > = Arr extends [infer F extends string, ...infer Rest extends string[]]
     ? Acc['length'] extends I
         ? F extends TicTacToeEmptyCell
-            ? With<Rest, I, T, [...Acc, T]>
-            : With<Rest, I, T, [...Acc, F]>
-        : With<Rest, I, T, [...Acc, F]>
+            ? With<Rest, I, S, [...Acc, S]>
+            : With<Rest, I, S, [...Acc, F]>
+        : With<Rest, I, S, [...Acc, F]>
     : Acc
 
-type To1DArr<Board extends TicTactToeBoard> = [
-    ...Board[0],
-    ...Board[1],
-    ...Board[2]
-]
-
-type To2DArr<T extends Array<string>, Acc extends string[][] = []> = T extends [
-    infer A extends string,
-    infer B extends string,
-    infer C extends string,
-    ...infer Rest extends string[]
-]
-    ? To2DArr<Rest, [...Acc, [A, B, C]]>
-    : Acc
-
-type ProccessBoard<
+type Move<
     Board extends TicTactToeBoard,
-    P extends TicTacToePositions,
-    S extends TicTacToeChip
-> = To2DArr<With<To1DArr<Board>, PositionToIndex<P>, S>>
+    Pos extends TicTacToePositions,
+    Chip extends TicTacToeChip
+> = To2D<With<To1D<Board>, PositionToIndex<Pos>, Chip>>
 
 type CheckWin<Board extends TicTactToeBoard> = keyof {
     [C in WinningCombination as [
-        To1DArr<Board>[C[0]],
-        To1DArr<Board>[C[1]],
-        To1DArr<Board>[C[2]]
+        To1D<Board>[C[0]],
+        To1D<Board>[C[1]],
+        To1D<Board>[C[2]]
     ] extends ['❌', '❌', '❌']
         ? '❌ Won'
-        : [
-              To1DArr<Board>[C[0]],
-              To1DArr<Board>[C[1]],
-              To1DArr<Board>[C[2]]
-          ] extends ['⭕', '⭕', '⭕']
+        : [To1D<Board>[C[0]], To1D<Board>[C[1]], To1D<Board>[C[2]]] extends [
+              '⭕',
+              '⭕',
+              '⭕'
+          ]
         ? '⭕ Won'
         : TicTacToeEmptyCell extends Board[number][number]
         ? never
         : 'Draw']: unknown
 }
 
-type Turn<
-    Board extends TicTactToeBoard,
-    P extends TicTacToePositions,
-    S extends TicTacToeChip
-> = {
-    board: ProccessBoard<Board, P, S>
-    state: Board extends ProccessBoard<Board, P, S>
-        ? S
-        : CheckWin<ProccessBoard<Board, P, S>> extends never
-        ? Swap<S>
-        : CheckWin<ProccessBoard<Board, P, S>>
-}
-
 type TicTacToe<
     T extends TicTacToeGame,
-    P extends TicTacToePositions
+    Pos extends TicTacToePositions
 > = T extends {
-    board: infer B extends TicTactToeBoard
-    state: infer S extends TicTacToeChip
+    board: infer Board extends TicTactToeBoard
+    state: infer Chip extends TicTacToeChip
 }
-    ? Turn<B, P, S>
+    ? {
+          board: Move<Board, Pos, Chip>
+          state: Board extends Move<Board, Pos, Chip>
+              ? Chip
+              : CheckWin<Move<Board, Pos, Chip>> extends never
+              ? Swap<Chip>
+              : CheckWin<Move<Board, Pos, Chip>>
+      }
     : never

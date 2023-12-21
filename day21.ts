@@ -26,7 +26,7 @@ type WinningCombination =
     | [2, 4, 6]
 
 type To1D<T extends TicTactToeBoard> = [...T[0], ...T[1], ...T[2]]
-type To2D<T extends Array<string>, Acc extends string[][] = []> = T extends [
+type To2D<T extends string[], Acc extends string[][] = []> = T extends [
     infer A extends string,
     infer B extends string,
     infer C extends string,
@@ -71,6 +71,12 @@ type CheckWin<Board extends TicTactToeBoard> = keyof {
         : 'Draw']: unknown
 }
 
+type GetState<
+    T extends TicTactToeBoard,
+    U extends TicTactToeBoard,
+    C extends TicTacToeChip
+> = T extends U ? C : CheckWin<U> extends never ? Swap<C> : CheckWin<U>
+
 type TicTacToe<
     T extends TicTacToeGame,
     Pos extends TicTacToePositions
@@ -80,10 +86,6 @@ type TicTacToe<
 }
     ? {
           board: Move<Board, Pos, Chip>
-          state: Board extends Move<Board, Pos, Chip>
-              ? Chip
-              : CheckWin<Move<Board, Pos, Chip>> extends never
-              ? Swap<Chip>
-              : CheckWin<Move<Board, Pos, Chip>>
+          state: GetState<Board, Move<Board, Pos, Chip>, Chip>
       }
     : never

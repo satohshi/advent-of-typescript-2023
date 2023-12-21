@@ -15,7 +15,7 @@ type EmptyBoard = [['  ', '  ', '  '], ['  ', '  ', '  '], ['  ', '  ', '  ']]
 type NewGame = { board: EmptyBoard; state: '❌' }
 type Win = ['❌', '❌', '❌'] | ['⭕', '⭕', '⭕']
 
-// Similar to array.with(), but returns never if the cell is already taken
+// Same as array.with()
 type ArrayWith<
     Arr extends string[],
     I extends number,
@@ -23,13 +23,11 @@ type ArrayWith<
     Acc extends string[] = []
 > = Arr extends [infer F extends string, ...infer Rest extends string[]]
     ? Acc['length'] extends I
-        ? F extends TicTacToeEmptyCell
-            ? ArrayWith<Rest, I, S, [...Acc, S]>
-            : never
+        ? ArrayWith<Rest, I, S, [...Acc, S]>
         : ArrayWith<Rest, I, S, [...Acc, F]>
     : Acc
 
-// 2D version of ArrayWith
+// 2D version of ArrayWith. Returns never if the cell is already taken
 type MatrixWith<
     Arr extends string[][],
     Y extends number,

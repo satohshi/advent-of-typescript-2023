@@ -39,42 +39,39 @@ type Reindeer =
 type Horizontal = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 
 type Vertical = {
-    0: [0, 0]
-    1: [0, 1]
-    2: [0, 2]
-    3: [1, 0]
-    4: [1, 1]
-    5: [1, 2]
-    6: [2, 0]
-    7: [2, 1]
-    8: [2, 2]
+    0: [Horizontal, 0, 0]
+    1: [Horizontal, 0, 1]
+    2: [Horizontal, 0, 2]
+    3: [Horizontal, 1, 0]
+    4: [Horizontal, 1, 1]
+    5: [Horizontal, 1, 2]
+    6: [Horizontal, 2, 0]
+    7: [Horizontal, 2, 1]
+    8: [Horizontal, 2, 2]
 }
 
-type Subgrid = {
-    0: [0 | 1 | 2, 0]
-    1: [0 | 1 | 2, 1]
-    2: [0 | 1 | 2, 2]
-    3: [3 | 4 | 5, 0]
-    4: [3 | 4 | 5, 1]
-    5: [3 | 4 | 5, 2]
-    6: [6 | 7 | 8, 0]
-    7: [6 | 7 | 8, 1]
-    8: [6 | 7 | 8, 2]
+type Region = {
+    0: [0 | 1 | 2, 0, 0 | 1 | 2]
+    1: [0 | 1 | 2, 1, 0 | 1 | 2]
+    2: [0 | 1 | 2, 2, 0 | 1 | 2]
+    3: [3 | 4 | 5, 0, 0 | 1 | 2]
+    4: [3 | 4 | 5, 1, 0 | 1 | 2]
+    5: [3 | 4 | 5, 2, 0 | 1 | 2]
+    6: [6 | 7 | 8, 0, 0 | 1 | 2]
+    7: [6 | 7 | 8, 1, 0 | 1 | 2]
+    8: [6 | 7 | 8, 2, 0 | 1 | 2]
 }
 
 type Validate<T extends Array<string[][]>> = {
-    [Y in Horizontal as `horizontal_${Y}`]: Reindeer extends T[Y][number][number]
+    [Y in Horizontal as `h_${Y}`]: Reindeer extends T[Y][number][number]
         ? true
         : false
 } & {
-    [X in keyof Vertical as `vertical_${X}`]: Reindeer extends T[Horizontal][Vertical[X][0]][Vertical[X][1]]
+    [X in keyof Vertical as `v_${X}`]: Reindeer extends T[Vertical[X][0]][Vertical[X][1]][Vertical[X][2]]
         ? true
         : false
 } & {
-    [G in keyof Subgrid as `subgrid_${G}`]: Reindeer extends T[Subgrid[G][0]][Subgrid[G][1]][
-        | 0
-        | 1
-        | 2]
+    [R in keyof Region as `r_${R}`]: Reindeer extends T[Region[R][0]][Region[R][1]][Region[R][2]]
         ? true
         : false
 } extends { [key: string]: true }

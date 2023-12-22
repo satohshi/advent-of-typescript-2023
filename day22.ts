@@ -36,21 +36,21 @@ type Reindeer =
     | Blitzen
     | Rudolph
 
-type Horizontal = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+type Row = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 
-type Vertical = {
-    0: [Horizontal, 0, 0]
-    1: [Horizontal, 0, 1]
-    2: [Horizontal, 0, 2]
-    3: [Horizontal, 1, 0]
-    4: [Horizontal, 1, 1]
-    5: [Horizontal, 1, 2]
-    6: [Horizontal, 2, 0]
-    7: [Horizontal, 2, 1]
-    8: [Horizontal, 2, 2]
+type Col = {
+    0: [Row, 0, 0]
+    1: [Row, 0, 1]
+    2: [Row, 0, 2]
+    3: [Row, 1, 0]
+    4: [Row, 1, 1]
+    5: [Row, 1, 2]
+    6: [Row, 2, 0]
+    7: [Row, 2, 1]
+    8: [Row, 2, 2]
 }
 
-type Region = {
+type Subgrid = {
     0: [0 | 1 | 2, 0, 0 | 1 | 2]
     1: [0 | 1 | 2, 1, 0 | 1 | 2]
     2: [0 | 1 | 2, 2, 0 | 1 | 2]
@@ -63,15 +63,13 @@ type Region = {
 }
 
 type Validate<T extends Array<string[][]>> = {
-    [Y in Horizontal as `h_${Y}`]: Reindeer extends T[Y][number][number]
+    [R in Row as `r_${R}`]: Reindeer extends T[R][number][number] ? true : false
+} & {
+    [C in keyof Col as `c_${C}`]: Reindeer extends T[Col[C][0]][Col[C][1]][Col[C][2]]
         ? true
         : false
 } & {
-    [X in keyof Vertical as `v_${X}`]: Reindeer extends T[Vertical[X][0]][Vertical[X][1]][Vertical[X][2]]
-        ? true
-        : false
-} & {
-    [R in keyof Region as `r_${R}`]: Reindeer extends T[Region[R][0]][Region[R][1]][Region[R][2]]
+    [S in keyof Subgrid as `s_${S}`]: Reindeer extends T[Subgrid[S][0]][Subgrid[S][1]][Subgrid[S][2]]
         ? true
         : false
 } extends Record<string, true>

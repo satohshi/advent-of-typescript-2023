@@ -74,6 +74,6 @@ type Validate<T extends Array<string[][]>> = {
     [R in keyof Region as `r_${R}`]: Reindeer extends T[Region[R][0]][Region[R][1]][Region[R][2]]
         ? true
         : false
-} extends { [key: string]: true }
+} extends Record<string, true>
     ? true
     : false

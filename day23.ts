@@ -30,20 +30,14 @@ type MatrixWith<
     X extends number,
     S extends string,
     Acc extends Array<string[]> = []
-> = Arr extends [
-    infer F extends Array<string>,
-    ...infer Rest extends Array<string[]>
-]
+> = Arr extends [infer F extends Array<string>, ...infer Rest extends Array<string[]>]
     ? Acc['length'] extends Y
         ? MatrixWith<Rest, Y, X, S, [...Acc, ArrayWith<F, X, S>]>
         : MatrixWith<Rest, Y, X, S, [...Acc, F]>
     : Acc
 
 // Returns the row number of the last empty cell in the column i.e. the row to place the chip
-type GetRow<
-    T extends Connect4Board,
-    Col extends number
-> = T[number][Col] extends '  '
+type GetRow<T extends Connect4Board, Col extends number> = T[number][Col] extends '  '
     ? 5
     : keyof {
           [N in Row as T[N][Col] extends '  '
@@ -54,10 +48,7 @@ type GetRow<
       }
 
 // Check if array T contains subarray U
-type CheckSubarray<
-    T extends Array<string>,
-    U extends Array<string>
-> = T extends
+type CheckSubarray<T extends Array<string>, U extends Array<string>> = T extends
     | [unknown, ...U, ...unknown[]]
     | [...unknown[], ...U, unknown]
     | [...U, ...unknown[]]
@@ -71,11 +62,7 @@ type Rotate90<
     Col extends Array<number> = [0, 1, 2, 3, 4, 5, 6],
     Acc extends Array<Connect4Cell[]> = []
 > = Col extends [infer F extends number, ...infer Rest extends Array<number>]
-    ? Rotate90<
-          T,
-          Rest,
-          [...Acc, [T[0][F], T[1][F], T[2][F], T[3][F], T[4][F], T[5][F]]]
-      >
+    ? Rotate90<T, Rest, [...Acc, [T[0][F], T[1][F], T[2][F], T[3][F], T[4][F], T[5][F]]]>
     : Acc
 
 // Rotate the board 45 degrees and take the top and bottom off because they're < 4 in length
@@ -98,38 +85,32 @@ type Rotate315<T extends Connect4Board> = [
     [T[2][0], T[3][1], T[4][2], T[5][3]]
 ]
 
-type Rotations<T extends Connect4Board> =
-    | T
-    | Rotate90<T>
-    | Rotate45<T>
-    | Rotate315<T>
+type Rotations<T extends Connect4Board> = T | Rotate90<T> | Rotate45<T> | Rotate315<T>
 
-type CheckWin<
-    T extends Connect4Board,
-    C extends Connect4Chips
-> = true extends CheckSubarray<T[number], RedWin>
+type CheckWin<T extends Connect4Board, C extends Connect4Chips> = true extends CheckSubarray<
+    T[number],
+    RedWin
+>
     ? '🔴 Won'
     : true extends CheckSubarray<T[number], YellowWin>
     ? '🟡 Won'
     : Swap<C>
 
-type GetState<
-    T extends Connect4Board,
-    C extends Connect4Chips
-> = '  ' extends T[number][number] ? CheckWin<Rotations<T>, C> : 'Draw'
+type GetState<T extends Connect4Board, C extends Connect4Chips> = '  ' extends T[number][number]
+    ? CheckWin<Rotations<T>, C>
+    : 'Draw'
 
-type Move<
-    Board extends Connect4Board,
-    Col extends number,
-    S extends Connect4Chips
-> = GetRow<Board, Col> extends number
+type Move<Board extends Connect4Board, Col extends number, S extends Connect4Chips> = GetRow<
+    Board,
+    Col
+> extends number
     ? {
           board: MatrixWith<Board, GetRow<Board, Col>, Col, S>
           state: GetState<MatrixWith<Board, GetRow<Board, Col>, Col, S>, S>
       }
     : never
 
-type Connect4<Board extends Connect4Game, Col extends number> = Board extends {
+type Connect4<Game extends Connect4Game, Col extends number> = Game extends {
     board: infer Board extends Connect4Board
     state: infer State extends Connect4Chips
 }

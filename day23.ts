@@ -2,20 +2,11 @@ type Connect4Chips = '🔴' | '🟡'
 type Swap<C extends Connect4Chips> = C extends '🔴' ? '🟡' : '🔴'
 type Connect4Cell = Connect4Chips | '  '
 type Connect4State = '🔴' | '🟡' | '🔴 Won' | '🟡 Won' | 'Draw'
-
 type Connect4Board = Array<Connect4Cell[]>
-
 type Connect4Game = {
     board: Connect4Board
     state: Connect4State
 }
-
-type RedWin = ['🔴', '🔴', '🔴', '🔴']
-type YellowWin = ['🟡', '🟡', '🟡', '🟡']
-
-type Row = 0 | 1 | 2 | 3 | 4 | 5
-type RowBelow<N extends number> = [1, 2, 3, 4, 5, never][N]
-
 type EmptyBoard = [
     ['  ', '  ', '  ', '  ', '  ', '  ', '  '],
     ['  ', '  ', '  ', '  ', '  ', '  ', '  '],
@@ -24,12 +15,18 @@ type EmptyBoard = [
     ['  ', '  ', '  ', '  ', '  ', '  ', '  '],
     ['  ', '  ', '  ', '  ', '  ', '  ', '  ']
 ]
-
 type NewGame = {
     board: EmptyBoard
     state: '🟡'
 }
 
+type RedWin = ['🔴', '🔴', '🔴', '🔴']
+type YellowWin = ['🟡', '🟡', '🟡', '🟡']
+
+type Row = 0 | 1 | 2 | 3 | 4 | 5
+type RowBelow<N extends number> = [1, 2, 3, 4, 5, never][N]
+
+// Same as array.with()
 type ArrayWith<
     Arr extends Array<string>,
     I extends number,
@@ -41,6 +38,7 @@ type ArrayWith<
         : ArrayWith<Rest, I, S, [...Acc, F]>
     : Acc
 
+// 2D version of ArrayWith
 type MatrixWith<
     Arr extends Array<string[]>,
     Y extends number,
@@ -56,6 +54,7 @@ type MatrixWith<
         : MatrixWith<Rest, Y, X, S, [...Acc, F]>
     : Acc
 
+// Returns the row number of the last empty cell in the column i.e. the row to place the chip
 type GetRow<
     T extends Connect4Board,
     Col extends number
@@ -69,6 +68,7 @@ type GetRow<
               : never]: unknown
       }
 
+// Check if array T contains subarray U
 type CheckSubArray<
     T extends Array<string>,
     U extends Array<string>
@@ -88,6 +88,7 @@ type CheckRow<T extends Connect4Board> = keyof {
         : never]: unknown
 }
 
+// Technically not needed because test cases don't check for this.
 type Rotate90<
     T extends Connect4Board,
     Col extends Array<number> = [0, 1, 2, 3, 4, 5, 6],
@@ -100,6 +101,7 @@ type Rotate90<
       >
     : Acc
 
+// Technically not needed because test cases don't check for this.
 type CheckCol<T extends Connect4Board> = keyof {
     [N in 0 | 1 | 2 | 3 | 4 | 5 | 6 as CheckSubArray<
         Rotate90<T>[N],
@@ -111,6 +113,7 @@ type CheckCol<T extends Connect4Board> = keyof {
         : never]: unknown
 }
 
+// Rotate the board 45 degrees and take the top and bottom off because they're < 4 in length
 type Rotate45<T extends Connect4Board> = [
     [T[3][0], T[2][1], T[1][2], T[0][3]],
     [T[4][0], T[3][1], T[2][2], T[1][3], T[0][4]],
@@ -120,21 +123,37 @@ type Rotate45<T extends Connect4Board> = [
     [T[5][3], T[4][4], T[3][5], T[2][6]]
 ]
 
-type CheckDiagonal<T extends Connect4Board> = keyof {
-    [N in 0 | 1 | 2 | 3 | 4 | 5 as CheckSubArray<
-        Rotate45<T>[N],
+// Technically not needed because test cases don't check for this.
+type RotateMinus45<T extends Connect4Board> = [
+    [T[0][3], T[1][4], T[2][5], T[3][6]],
+    [T[0][2], T[1][3], T[2][4], T[3][5], T[4][6]],
+    [T[0][1], T[1][2], T[2][3], T[3][4], T[4][5], T[5][6]],
+    [T[0][0], T[1][1], T[2][2], T[3][3], T[4][4], T[5][5]],
+    [T[1][0], T[2][1], T[3][2], T[4][3], T[5][4]],
+    [T[2][0], T[3][1], T[4][2], T[5][3]]
+]
+
+type CheckDiagonal1<T extends Connect4Board> = keyof {
+    [N in 0 | 1 | 2 | 3 | 4 | 5 as true extends CheckSubArray<
+        Rotate45<T>[N] | RotateMinus45<T>[N],
         RedWin
-    > extends true
+    >
         ? '🔴 Won'
-        : CheckSubArray<Rotate45<T>[N], YellowWin> extends true
+        : true extends CheckSubArray<
+              Rotate45<T>[N] | RotateMinus45<T>[N],
+              YellowWin
+          >
         ? '🟡 Won'
         : never]: unknown
 }
 
-type EndState<T extends Connect4Board> = '  ' extends T[number][number]
-    ? CheckRow<T> | CheckCol<T> | CheckDiagonal<T> extends string
-        ? CheckRow<T> | CheckCol<T> | CheckDiagonal<T>
-        : never
+type GetState<
+    T extends Connect4Board,
+    C extends Connect4Chips
+> = '  ' extends T[number][number]
+    ? CheckRow<T> | CheckCol<T> | CheckDiagonal1<T> extends never
+        ? Swap<C>
+        : CheckRow<T> | CheckCol<T> | CheckDiagonal1<T>
     : 'Draw'
 
 type Move<
@@ -144,11 +163,7 @@ type Move<
 > = GetRow<Board, Col> extends number
     ? {
           board: MatrixWith<Board, GetRow<Board, Col>, Col, S>
-          state: EndState<
-              MatrixWith<Board, GetRow<Board, Col>, Col, S>
-          > extends never
-              ? Swap<S>
-              : EndState<MatrixWith<Board, GetRow<Board, Col>, Col, S>>
+          state: GetState<MatrixWith<Board, GetRow<Board, Col>, Col, S>, S>
       }
     : never
 

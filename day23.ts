@@ -85,8 +85,6 @@ type Rotate315<T extends Connect4Board> = [
     [T[2][0], T[3][1], T[4][2], T[5][3]]
 ]
 
-type Rotations<T extends Connect4Board> = T | Rotate90<T> | Rotate45<T> | Rotate315<T>
-
 type CheckWin<T extends Connect4Board, C extends Connect4Chips> = true extends CheckSubarray<
     T[number],
     RedWin
@@ -97,7 +95,7 @@ type CheckWin<T extends Connect4Board, C extends Connect4Chips> = true extends C
     : Swap<C>
 
 type GetState<T extends Connect4Board, C extends Connect4Chips> = '  ' extends T[number][number]
-    ? CheckWin<Rotations<T>, C>
+    ? CheckWin<T | Rotate90<T> | Rotate45<T> | Rotate315<T>, C>
     : 'Draw'
 
 type Move<Board extends Connect4Board, Col extends number, S extends Connect4Chips> = GetRow<

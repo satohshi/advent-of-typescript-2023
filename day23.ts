@@ -3,22 +3,7 @@ type Swap<C extends Connect4Chips> = C extends '🔴' ? '🟡' : '🔴'
 type Connect4Cell = Connect4Chips | '  '
 type Connect4State = '🔴' | '🟡' | '🔴 Won' | '🟡 Won' | 'Draw'
 type Connect4Board = Array<Connect4Cell[]>
-type Connect4Game = {
-    board: Connect4Board
-    state: Connect4State
-}
-type EmptyBoard = [
-    ['  ', '  ', '  ', '  ', '  ', '  ', '  '],
-    ['  ', '  ', '  ', '  ', '  ', '  ', '  '],
-    ['  ', '  ', '  ', '  ', '  ', '  ', '  '],
-    ['  ', '  ', '  ', '  ', '  ', '  ', '  '],
-    ['  ', '  ', '  ', '  ', '  ', '  ', '  '],
-    ['  ', '  ', '  ', '  ', '  ', '  ', '  ']
-]
-type NewGame = {
-    board: EmptyBoard
-    state: '🟡'
-}
+type Connect4Game = { board: Connect4Board; state: Connect4State }
 
 type RedWin = ['🔴', '🔴', '🔴', '🔴']
 type YellowWin = ['🟡', '🟡', '🟡', '🟡']
@@ -69,7 +54,7 @@ type GetRow<
       }
 
 // Check if array T contains subarray U
-type CheckSubArray<
+type CheckSubarray<
     T extends Array<string>,
     U extends Array<string>
 > = T extends
@@ -79,14 +64,6 @@ type CheckSubArray<
     | [...unknown[], ...U]
     ? true
     : false
-
-type CheckRow<T extends Connect4Board> = keyof {
-    [N in Row as CheckSubArray<T[N], RedWin> extends true
-        ? '🔴 Won'
-        : CheckSubArray<T[N], YellowWin> extends true
-        ? '🟡 Won'
-        : never]: unknown
-}
 
 // Technically not needed because test cases don't check for this.
 type Rotate90<
@@ -101,18 +78,6 @@ type Rotate90<
       >
     : Acc
 
-// Technically not needed because test cases don't check for this.
-type CheckCol<T extends Connect4Board> = keyof {
-    [N in 0 | 1 | 2 | 3 | 4 | 5 | 6 as CheckSubArray<
-        Rotate90<T>[N],
-        RedWin
-    > extends true
-        ? '🔴 Won'
-        : CheckSubArray<Rotate90<T>[N], YellowWin> extends true
-        ? '🟡 Won'
-        : never]: unknown
-}
-
 // Rotate the board 45 degrees and take the top and bottom off because they're < 4 in length
 type Rotate45<T extends Connect4Board> = [
     [T[3][0], T[2][1], T[1][2], T[0][3]],
@@ -124,7 +89,7 @@ type Rotate45<T extends Connect4Board> = [
 ]
 
 // Technically not needed because test cases don't check for this.
-type RotateMinus45<T extends Connect4Board> = [
+type Rotate315<T extends Connect4Board> = [
     [T[0][3], T[1][4], T[2][5], T[3][6]],
     [T[0][2], T[1][3], T[2][4], T[3][5], T[4][6]],
     [T[0][1], T[1][2], T[2][3], T[3][4], T[4][5], T[5][6]],
@@ -133,28 +98,25 @@ type RotateMinus45<T extends Connect4Board> = [
     [T[2][0], T[3][1], T[4][2], T[5][3]]
 ]
 
-type CheckDiagonal1<T extends Connect4Board> = keyof {
-    [N in 0 | 1 | 2 | 3 | 4 | 5 as true extends CheckSubArray<
-        Rotate45<T>[N] | RotateMinus45<T>[N],
-        RedWin
-    >
-        ? '🔴 Won'
-        : true extends CheckSubArray<
-              Rotate45<T>[N] | RotateMinus45<T>[N],
-              YellowWin
-          >
-        ? '🟡 Won'
-        : never]: unknown
-}
+type Rotations<T extends Connect4Board> =
+    | T
+    | Rotate90<T>
+    | Rotate45<T>
+    | Rotate315<T>
+
+type CheckWin<
+    T extends Connect4Board,
+    C extends Connect4Chips
+> = true extends CheckSubarray<T[number], RedWin>
+    ? '🔴 Won'
+    : true extends CheckSubarray<T[number], YellowWin>
+    ? '🟡 Won'
+    : Swap<C>
 
 type GetState<
     T extends Connect4Board,
     C extends Connect4Chips
-> = '  ' extends T[number][number]
-    ? CheckRow<T> | CheckCol<T> | CheckDiagonal1<T> extends never
-        ? Swap<C>
-        : CheckRow<T> | CheckCol<T> | CheckDiagonal1<T>
-    : 'Draw'
+> = '  ' extends T[number][number] ? CheckWin<Rotations<T>, C> : 'Draw'
 
 type Move<
     Board extends Connect4Board,
@@ -173,5 +135,3 @@ type Connect4<Board extends Connect4Game, Col extends number> = Board extends {
 }
     ? Move<Board, Col, State>
     : never
-
-export {}

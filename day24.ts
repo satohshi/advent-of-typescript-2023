@@ -4,14 +4,14 @@ type MazeMatrix = MazeItem[][]
 type ForestSize = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 type PlusOne<N extends ForestSize> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 'Escaped'][N]
 type MinusOne<N extends ForestSize> = ['Escaped', 0, 1, 2, 3, 4, 5, 6, 7, 8][N]
-type ValidIndex = [ForestSize, ForestSize]
-type Directions<T extends ValidIndex> = {
+type InsideForest = [ForestSize, ForestSize]
+type Directions<T extends InsideForest> = {
     up: [MinusOne<T[0]>, T[1]]
     down: [PlusOne<T[0]>, T[1]]
     left: [T[0], MinusOne<T[1]>]
     right: [T[0], PlusOne<T[1]>]
 }
-type Direction = keyof Directions<ValidIndex>
+type Direction = keyof Directions<InsideForest>
 type WinRow = ['🍪', '🍪', '🍪', '🍪', '🍪', '🍪', '🍪', '🍪', '🍪', '🍪']
 type WinMatrix = [WinRow, WinRow, WinRow, WinRow, WinRow, WinRow, WinRow, WinRow, WinRow, WinRow]
 
@@ -34,17 +34,15 @@ type FindSanta<T extends MazeMatrix> = [
 
 type ValidateMove<
     T extends MazeMatrix,
-    From extends ValidIndex,
+    From extends InsideForest,
     Dir extends Direction,
     To = Directions<From>[Dir]
-> = To extends ValidIndex
+> = To extends InsideForest
     ? T[To[0]][To[1]] extends Alley
         ? MatrixWith<MatrixWith<T, From, Alley>, To, '🎅'>
         : T
-    : 'Escaped' extends To[keyof To]
-    ? WinMatrix
-    : never
+    : WinMatrix
 
-type Move<T extends MazeMatrix, U extends Direction> = FindSanta<T> extends ValidIndex
+type Move<T extends MazeMatrix, U extends Direction> = FindSanta<T> extends InsideForest
     ? ValidateMove<T, FindSanta<T>, U>
     : never

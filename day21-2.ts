@@ -15,7 +15,7 @@ type EmptyBoard = [['  ', '  ', '  '], ['  ', '  ', '  '], ['  ', '  ', '  ']]
 type NewGame = { board: EmptyBoard; state: '❌' }
 type Win = ['❌', '❌', '❌'] | ['⭕', '⭕', '⭕']
 
-// Similar to array.with() but returns never if the cell is already taken
+// Similar to array.with() but also checks if the cell is already taken
 type ArrayWith<Arr extends unknown[], I extends number, S> = {
     [Key in keyof Arr]: Key extends `${I}`
         ? Arr[Key] extends TicTacToeEmptyCell

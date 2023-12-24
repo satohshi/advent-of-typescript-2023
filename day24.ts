@@ -23,7 +23,7 @@ type MatrixWith<M extends Array<unknown[]>, I extends [number, number], S> = {
     [Key in keyof M]: Key extends `${I[0]}` ? ArrayWith<M[Key], I[1], S> : M[Key]
 }
 
-type FindSanta<T extends Array<string[]>> = [
+type FindSanta<T extends MazeMatrix> = [
     keyof {
         [N in ForestSize as '🎅' extends T[N][number] ? N : never]: unknown
     },

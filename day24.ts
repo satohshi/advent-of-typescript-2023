@@ -15,28 +15,13 @@ type Direction = keyof Directions<ValicIndex>
 type WinRow = ['🍪', '🍪', '🍪', '🍪', '🍪', '🍪', '🍪', '🍪', '🍪', '🍪']
 type WinMatrix = [WinRow, WinRow, WinRow, WinRow, WinRow, WinRow, WinRow, WinRow, WinRow, WinRow]
 
-type ArrayWith<
-    Arr extends Array<string>,
-    I extends number,
-    S extends string,
-    Acc extends Array<string> = []
-> = Arr extends [infer F extends string, ...infer Rest extends Array<string>]
-    ? Acc['length'] extends I
-        ? ArrayWith<Rest, I, S, [...Acc, S]>
-        : ArrayWith<Rest, I, S, [...Acc, F]>
-    : Acc
+type ArrayWith<Arr extends unknown[], I extends number, S> = {
+    [Key in keyof Arr]: Key extends `${I}` ? S : Arr[Key]
+}
 
-type MatrixWith<
-    Arr extends Array<string[]>,
-    Y extends number,
-    X extends number,
-    S extends string,
-    Acc extends Array<string[]> = []
-> = Arr extends [infer F extends Array<string>, ...infer Rest extends Array<string[]>]
-    ? Acc['length'] extends Y
-        ? MatrixWith<Rest, Y, X, S, [...Acc, ArrayWith<F, X, S>]>
-        : MatrixWith<Rest, Y, X, S, [...Acc, F]>
-    : Acc
+type MatrixWith<M extends Array<unknown[]>, I extends [number, number], S> = {
+    [Key in keyof M]: Key extends `${I[0]}` ? ArrayWith<M[Key], I[1], S> : M[Key]
+}
 
 type FindSanta<T extends Array<string[]>> = [
     keyof {
@@ -49,18 +34,19 @@ type FindSanta<T extends Array<string[]>> = [
 
 type ValidateMove<
     T extends MazeMatrix,
-    From extends [ForestSize, ForestSize],
-    To = Directions<From>[Direction]
-> = To extends [ForestSize, ForestSize]
+    From extends ValicIndex,
+    Dir extends Direction,
+    To = Directions<From>[Dir]
+> = To extends ValicIndex
     ? T[To[0]][To[1]] extends Alley
-        ? MatrixWith<MatrixWith<T, From[0], From[1], Alley>, To[0], To[1], '🎅'>
+        ? MatrixWith<MatrixWith<T, From, Alley>, To, '🎅'>
         : T
-    : To extends [ForestSize | 10, ForestSize | 10]
+    : 10 extends To[keyof To]
     ? WinMatrix
     : never
 
-type Move<T extends MazeMatrix, U extends Direction> = FindSanta<T> extends [ForestSize, ForestSize]
-    ? ValidateMove<T, FindSanta<T>, Directions<FindSanta<T>>[U]>
+type Move<T extends MazeMatrix, U extends Direction> = FindSanta<T> extends ValicIndex
+    ? ValidateMove<T, FindSanta<T>, U>
     : never
 
 export {}

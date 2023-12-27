@@ -30,7 +30,8 @@ type GetRow<T extends Connect4Board, Col extends number> = T[number][Col] extend
                   ? N
                   : never
               : never]: unknown
-      }
+      } &
+          number
 
 // Check if array T contains subarray U
 type CheckSubarray<T extends Array<string>, U extends Array<string>> = T extends
@@ -83,15 +84,10 @@ type GetState<T extends Connect4Board, C extends Connect4Chips> = '  ' extends T
     ? CheckWin<T | Rotate90<T> | Rotate45<T> | RotateMinus45<T>, C>
     : 'Draw'
 
-type Move<Board extends Connect4Board, Col extends number, S extends Connect4Chips> = GetRow<
-    Board,
-    Col
-> extends number
-    ? {
-          board: MatrixWith<Board, [GetRow<Board, Col>, Col], S>
-          state: GetState<MatrixWith<Board, [GetRow<Board, Col>, Col], S>, S>
-      }
-    : never
+type Move<Board extends Connect4Board, Col extends number, S extends Connect4Chips> = {
+    board: MatrixWith<Board, [GetRow<Board, Col>, Col], S>
+    state: GetState<MatrixWith<Board, [GetRow<Board, Col>, Col], S>, S>
+}
 
 type Connect4<Board extends Connect4Game, Col extends number> = Board extends {
     board: infer Board extends Connect4Board

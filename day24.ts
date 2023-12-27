@@ -2,9 +2,9 @@ type Alley = '  '
 type MazeItem = '🎄' | '🎅' | Alley
 type MazeMatrix = MazeItem[][]
 type ForestSize = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+type InsideForest = [ForestSize, ForestSize]
 type PlusOne<N extends ForestSize> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 'Escaped'][N]
 type MinusOne<N extends ForestSize> = ['Escaped', 0, 1, 2, 3, 4, 5, 6, 7, 8][N]
-type InsideForest = [ForestSize, ForestSize]
 type Directions<T extends InsideForest> = {
     up: [MinusOne<T[0]>, T[1]]
     down: [PlusOne<T[0]>, T[1]]
@@ -30,7 +30,8 @@ type FindSanta<T extends MazeMatrix> = [
     keyof {
         [N in ForestSize as '🎅' extends T[number][N] ? N : never]: unknown
     }
-]
+] &
+    InsideForest
 
 type ValidateMove<
     T extends MazeMatrix,
@@ -43,6 +44,4 @@ type ValidateMove<
         : T
     : WinMatrix
 
-type Move<T extends MazeMatrix, U extends Direction> = FindSanta<T> extends InsideForest
-    ? ValidateMove<T, FindSanta<T>, U>
-    : never
+type Move<T extends MazeMatrix, U extends Direction> = ValidateMove<T, FindSanta<T>, U>

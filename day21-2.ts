@@ -67,5 +67,3 @@ type TicTacToe<T extends TicTacToeGame, P extends TicTacToePositions> = T extend
         ? T
         : Next<Move<B, P, S>, S>
     : never
-
-export {}

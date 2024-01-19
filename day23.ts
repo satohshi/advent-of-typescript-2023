@@ -95,5 +95,3 @@ type Connect4<Board extends Connect4Game, Col extends number> = Board extends {
 }
     ? Move<Board, Col, State>
     : never
-
-export {}
